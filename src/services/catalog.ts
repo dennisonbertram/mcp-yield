@@ -33,6 +33,11 @@ const parseListResponse = <T>(schema: z.ZodType<T>, data: unknown, endpoint: str
       const wrapped = (data as { data: unknown }).data;
       return schema.array().parse(wrapped);
     }
+    // Handle v1 API providers format: {items: [...]}
+    if (data && typeof data === 'object' && 'items' in data) {
+      const wrapped = (data as { items: unknown }).items;
+      return schema.array().parse(wrapped);
+    }
     const parsed = schema.parse(data);
     return [parsed];
   } catch (error) {
@@ -89,8 +94,10 @@ export const catalogService = {
 
   async getProtocols(): Promise<CachedList<StakeKitProtocol>> {
     return withCache(PROTOCOL_CACHE, 'protocols', async () => {
-      const { data, source } = await stakeKitClient.get<unknown>('/protocols');
-      const items = parseListResponse(stakeKitProtocolSchema, data, 'protocols');
+      // v1 API uses /providers endpoint instead of /protocols
+      const { data, source } = await stakeKitClient.get<unknown>('/providers');
+      // v1 returns {items: [...]} format, which parseListResponse handles
+      const items = parseListResponse(stakeKitProtocolSchema, data, 'providers');
       return { items, source, fetchedAt: new Date().toISOString() };
     });
   },

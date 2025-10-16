@@ -62,15 +62,17 @@ const tokensResponse = [
   { id: 'eth', symbol: 'ETH', name: 'Ethereum', networks: ['ethereum'] }
 ];
 
-const protocolsResponse = [
-  { id: 'lido', name: 'Lido', category: 'staking', description: 'Liquid staking', networks: ['ethereum'] }
-];
+const protocolsResponse = {
+  items: [
+    { id: 'lido', name: 'Lido', category: 'staking', description: 'Liquid staking', networks: ['ethereum'] }
+  ]
+};
 
 describe('resources', () => {
   it('returns yield resource payload with peer analysis', async () => {
-    const listScope = nock('https://api.stakek.it').get('/v2/yields').query((params) => !params.network).reply(200, yieldsResponse);
-    const peerScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const listScope = nock('https://api.yield.xyz').get('/v1/yields').query((params) => !params.network).reply(200, yieldsResponse);
+    const peerScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.network === 'ethereum')
       .reply(200, yieldsResponse);
     const server = createServer();
@@ -84,9 +86,9 @@ describe('resources', () => {
   });
 
   it('returns network markdown overview', async () => {
-    const networkScope = nock('https://api.stakek.it').get('/v2/networks').reply(200, networksResponse);
-    const yieldScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const networkScope = nock('https://api.yield.xyz').get('/v1/networks').reply(200, networksResponse);
+    const yieldScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.network === 'ethereum')
       .reply(200, yieldsResponse);
     const server = createServer();
@@ -97,8 +99,8 @@ describe('resources', () => {
   });
 
   it('returns aggregated networks overview', async () => {
-    const networkScope = nock('https://api.stakek.it').get('/v2/networks').reply(200, networksResponse);
-    const yieldScope = nock('https://api.stakek.it').get('/v2/yields').query(true).reply(200, yieldsResponse);
+    const networkScope = nock('https://api.yield.xyz').get('/v1/networks').reply(200, networksResponse);
+    const yieldScope = nock('https://api.yield.xyz').get('/v1/yields').query(true).reply(200, yieldsResponse);
     const server = createServer();
     const result = await callResource(server, 'networks-overview', 'networks://all', {});
     const parsed = JSON.parse(result.contents[0].text);
@@ -108,9 +110,9 @@ describe('resources', () => {
   });
 
   it('builds token resource', async () => {
-    const tokenScope = nock('https://api.stakek.it').get('/v2/tokens').reply(200, tokensResponse);
-    const yieldScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const tokenScope = nock('https://api.yield.xyz').get('/v1/tokens').reply(200, tokensResponse);
+    const yieldScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.token === 'ETH')
       .reply(200, yieldsResponse);
     const server = createServer();
@@ -122,8 +124,8 @@ describe('resources', () => {
   });
 
   it('builds protocol resource', async () => {
-    const protocolScope = nock('https://api.stakek.it').get('/v2/protocols').reply(200, protocolsResponse);
-    const yieldScope = nock('https://api.stakek.it').get('/v2/yields').query(true).reply(200, yieldsResponse);
+    const protocolScope = nock('https://api.yield.xyz').get('/v1/providers').reply(200, protocolsResponse);
+    const yieldScope = nock('https://api.yield.xyz').get('/v1/yields').query(true).reply(200, yieldsResponse);
     const server = createServer();
     const result = await callResource(server, 'protocol-detail', 'protocol://lido', { protocolId: 'lido' });
     const parsed = JSON.parse(result.contents[0].text);

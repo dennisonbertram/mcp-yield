@@ -21,8 +21,8 @@ querystring.parse = ((...args: Parameters<typeof originalParse>) => {
 }) as typeof originalParse;
 
 process.env.STAKEKIT_API_KEY = process.env.STAKEKIT_API_KEY ?? 'test-key';
-process.env.STAKEKIT_BASE_URL = process.env.STAKEKIT_BASE_URL ?? 'https://api.stakek.it/v2';
-process.env.STAKEKIT_FALLBACK_URL = process.env.STAKEKIT_FALLBACK_URL ?? 'https://api.yield.xyz/v1';
+process.env.STAKEKIT_BASE_URL = process.env.STAKEKIT_BASE_URL ?? 'https://api.yield.xyz/v1';
+process.env.STAKEKIT_FALLBACK_URL = process.env.STAKEKIT_FALLBACK_URL ?? 'https://api.stakek.it/v2';
 process.env.LOG_LEVEL = process.env.LOG_LEVEL ?? 'error';
 
 if (!process.env.RUN_LIVE_TESTS) {

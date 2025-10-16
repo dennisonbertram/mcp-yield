@@ -10,11 +10,11 @@ const envSchema = z.object({
   STAKEKIT_BASE_URL: z
     .string()
     .url()
-    .default('https://api.stakek.it/v2'),
+    .default('https://api.yield.xyz/v1'),
   STAKEKIT_FALLBACK_URL: z
     .string()
     .url()
-    .default('https://api.yield.xyz/v1'),
+    .default('https://api.stakek.it/v2'),
   LOG_LEVEL: z
     .enum(['debug', 'info', 'warn', 'error'])
     .default('info'),

@@ -88,7 +88,7 @@ const lendingResponse = {
 
 describe('yield tools', () => {
   it('returns paginated opportunities', async () => {
-    const scope = nock('https://api.stakek.it').get('/v2/yields').query(true).reply(200, baseListResponse);
+    const scope = nock('https://api.yield.xyz').get('/v1/yields').query(true).reply(200, baseListResponse);
     const server = createServer();
     const result = await callTool(server, 'get-yield-opportunities', { limit: 5 });
     expect(result.structuredContent.items).toHaveLength(2);
@@ -113,7 +113,7 @@ describe('yield tools', () => {
       },
       token: { symbol: 'MATIC', network: 'polygon' }
     };
-    const scope = nock('https://api.stakek.it').get('/v2/yields/polygon-matic-stake').reply(200, detailResponse);
+    const scope = nock('https://api.yield.xyz').get('/v1/yields/polygon-matic-stake').reply(200, detailResponse);
     const server = createServer();
     const result = await callTool(server, 'get-yield-details', { yieldId: 'polygon-matic-stake' });
     expect(result.structuredContent.overview.warnings).toHaveLength(2);
@@ -121,8 +121,8 @@ describe('yield tools', () => {
   });
 
   it('filters by network and handles missing data', async () => {
-    const scope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const scope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.network === 'nonexistent')
       .reply(200, { data: [], limit: 20 });
     const server = createServer();
@@ -133,8 +133,8 @@ describe('yield tools', () => {
   });
 
   it('filters by token symbol', async () => {
-    const scope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const scope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.token === 'ETH')
       .reply(200, baseListResponse);
     const server = createServer();
@@ -144,12 +144,12 @@ describe('yield tools', () => {
   });
 
   it('merges staking and liquid staking yields when requested', async () => {
-    const baseScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const baseScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.type === 'staking')
       .reply(200, baseListResponse);
-    const liquidScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const liquidScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.type === 'liquid_staking')
       .reply(200, baseListResponse);
     const server = createServer();
@@ -160,8 +160,8 @@ describe('yield tools', () => {
   });
 
   it('returns lending market metrics', async () => {
-    const scope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const scope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.type === 'lending')
       .reply(200, lendingResponse);
     const server = createServer();
@@ -191,8 +191,8 @@ describe('yield tools', () => {
         }
       ]
     };
-    const scope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const scope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.type === 'vault')
       .reply(200, vaultResponse);
     const server = createServer();
@@ -202,8 +202,8 @@ describe('yield tools', () => {
   });
 
   it('ranks top yields by APY', async () => {
-    const scope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const scope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.limit === 100)
       .reply(200, baseListResponse);
     const server = createServer();

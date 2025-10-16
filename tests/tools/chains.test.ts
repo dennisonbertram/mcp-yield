@@ -75,6 +75,19 @@ const protocolsResponse = [
   }
 ];
 
+// v1 API providers response format
+const providersResponse = {
+  items: [
+    {
+      id: 'lido',
+      name: 'Lido',
+      type: 'staking',
+      website: 'https://lido.fi',
+      logoURI: 'https://example.com/lido.png'
+    }
+  ]
+};
+
 const yieldsResponse = {
   data: [
     {
@@ -97,8 +110,9 @@ const yieldsResponse = {
 };
 
 describe('chain and protocol tools', () => {
-  it('lists supported chains', async () => {
-    const scope = nock('https://api.stakek.it').get('/v2/networks').reply(200, networksResponse);
+  it('lists supported chains using v1 API', async () => {
+    // v1 API uses api.yield.xyz and returns direct array, not paginated response
+    const scope = nock('https://api.yield.xyz').get('/v1/networks').reply(200, networksResponse);
     const server = createServer();
     const result = await callTool(server, 'list-supported-chains', { includeTestnets: false });
     expect(result.structuredContent.items).toHaveLength(1);
@@ -106,9 +120,9 @@ describe('chain and protocol tools', () => {
   });
 
   it('fetches chain details with notable yields', async () => {
-    const networkScope = nock('https://api.stakek.it').get('/v2/networks').reply(200, networksResponse);
-    const yieldScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const networkScope = nock('https://api.yield.xyz').get('/v1/networks').reply(200, networksResponse);
+    const yieldScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.network === 'ethereum')
       .reply(200, yieldsResponse);
     const server = createServer();
@@ -119,8 +133,8 @@ describe('chain and protocol tools', () => {
   });
 
   it('deduplicates tokens across networks', async () => {
-    const networkScope = nock('https://api.stakek.it').get('/v2/networks').reply(200, networksResponse);
-    const tokenScope = nock('https://api.stakek.it').get('/v2/tokens').reply(200, tokensResponse);
+    const networkScope = nock('https://api.yield.xyz').get('/v1/networks').reply(200, networksResponse);
+    const tokenScope = nock('https://api.yield.xyz').get('/v1/tokens').reply(200, tokensResponse);
     const server = createServer();
     const result = await callTool(server, 'list-supported-tokens', {});
     expect(result.structuredContent.items[0].networks.length).toBe(2);
@@ -129,9 +143,9 @@ describe('chain and protocol tools', () => {
   });
 
   it('fetches token details with supported yields', async () => {
-    const tokenScope = nock('https://api.stakek.it').get('/v2/tokens').reply(200, tokensResponse);
-    const yieldScope = nock('https://api.stakek.it')
-      .get('/v2/yields')
+    const tokenScope = nock('https://api.yield.xyz').get('/v1/tokens').reply(200, tokensResponse);
+    const yieldScope = nock('https://api.yield.xyz')
+      .get('/v1/yields')
       .query((params) => params.token === 'ETH')
       .reply(200, yieldsResponse);
     const server = createServer();
@@ -141,23 +155,24 @@ describe('chain and protocol tools', () => {
     yieldScope.done();
   });
 
-  it('lists protocols with yield counts', async () => {
-    const protocolScope = nock('https://api.stakek.it').get('/v2/protocols').reply(200, protocolsResponse);
-    const yieldScope = nock('https://api.stakek.it').get('/v2/yields').query(true).reply(200, yieldsResponse);
+  it('lists providers (v1 API uses providers instead of protocols)', async () => {
+    // v1 API uses /providers endpoint which returns {items: [...]}
+    const providerScope = nock('https://api.yield.xyz').get('/v1/providers').reply(200, providersResponse);
+    const yieldScope = nock('https://api.yield.xyz').get('/v1/yields').query(true).reply(200, yieldsResponse);
     const server = createServer();
     const result = await callTool(server, 'list-protocols', {});
     expect(result.structuredContent.items[0].yieldCount).toBe(1);
-    protocolScope.done();
+    providerScope.done();
     yieldScope.done();
   });
 
-  it('returns protocol details with statistics', async () => {
-    const protocolScope = nock('https://api.stakek.it').get('/v2/protocols').reply(200, protocolsResponse);
-    const yieldScope = nock('https://api.stakek.it').get('/v2/yields').query(true).reply(200, yieldsResponse);
+  it('returns provider details with statistics (v1 API uses providers)', async () => {
+    const providerScope = nock('https://api.yield.xyz').get('/v1/providers').reply(200, providersResponse);
+    const yieldScope = nock('https://api.yield.xyz').get('/v1/yields').query(true).reply(200, yieldsResponse);
     const server = createServer();
     const result = await callTool(server, 'get-protocol-details', { protocolId: 'lido' });
     expect(result.structuredContent.stats.medianApy ?? result.structuredContent.stats.maxApy).not.toBeUndefined();
-    protocolScope.done();
+    providerScope.done();
     yieldScope.done();
   });
 
