@@ -488,13 +488,20 @@ export const registerYieldTools = (server: McpServer) => {
         const filteredSummaries = parsed.protocol
           ? response.summaries.filter((item) => item.name.toLowerCase().includes(parsed.protocol!.toLowerCase()))
           : response.summaries;
+
+        // Create a Map for O(1) lookups instead of O(n) find operations
+        const entryMap = new Map(response.raw.map((entry) => [entry.id, entry]));
+
         return {
-          items: filteredSummaries.map((summary) => ({
-            ...summary,
-            supplyApy: summary.apy,
-            collateralFactor: response.raw.find((entry) => entry.id === summary.id)?.metrics?.collateralFactor,
-            borrowApy: response.raw.find((entry) => entry.id === summary.id)?.metrics?.borrowApy
-          })),
+          items: filteredSummaries.map((summary) => {
+            const entry = entryMap.get(summary.id);
+            return {
+              ...summary,
+              supplyApy: summary.apy,
+              collateralFactor: entry?.metrics?.collateralFactor,
+              borrowApy: entry?.metrics?.borrowApy
+            };
+          }),
           meta: response.meta,
           source: response.source
         };
