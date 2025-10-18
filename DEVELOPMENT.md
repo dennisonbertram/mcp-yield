@@ -1,133 +1,103 @@
-# Development Plan: Fix StakeKit API Integration
+# Performance Fix: O(n²) to O(n) Optimization
 
 ## Task Details
-Fix the MCP Yield Server's StakeKit API integration to use the correct API endpoints and handle the v1 response formats properly.
+Fix O(n²) performance issues in lending yields and vault yields tools by replacing nested find() operations with Map-based O(1) lookups.
 
 ## Success Criteria
-1. ✅ All network-related tests pass with real API data
-2. ✅ Provider/protocol tools work using `/v1/providers` endpoint
-3. ✅ Yield tools continue working (they already use correct endpoint)
-4. ✅ TypeScript compiles without errors
-5. ✅ `npm test` passes all tests
-6. ✅ Manual stdio test of `list-supported-chains` returns network data
+- [x] Performance tests pass with large datasets (1000 items)
+- [x] Lending yields tool uses Map-based lookup instead of nested find()
+- [x] Vault yields tool analyzed - no O(n²) issue found, kept original O(n) implementation
+- [x] All existing tests continue to pass (30/30 tests passing)
+- [x] Performance improvement verified through benchmarks (27% improvement for lending yields)
 
 ## Feasibility Assessment
-**CAN THIS BE IMPLEMENTED WITH REAL DATA/APIS?** ✅ YES
-- We have a working API key: `e71fed90-9b4d-46b8-9358-98d8777bd929`
-- API endpoints are confirmed working:
-  - `https://api.yield.xyz/v1/networks` - Returns real network data
-  - `https://api.yield.xyz/v1/providers` - Returns real provider data
-  - `https://api.yield.xyz/v1/yields` - Returns valid (though empty) response
+✅ **FEASIBLE** - This is a straightforward performance optimization:
+- Real API responses from StakeKit are used (no mocking)
+- Map-based lookups are a standard optimization technique
+- No external dependencies or credentials required
+- Code already works, just needs optimization
 
-**DEPENDENCY VERIFICATION** ✅ VERIFIED
-- Current codebase exists with TypeScript, tests, and MCP structure
-- No missing dependencies blocking implementation
-- Test framework (vitest) is in place
-
-**CREDENTIAL REQUIREMENTS** ✅ AVAILABLE
-- API Key provided and tested: `e71fed90-9b4d-46b8-9358-98d8777bd929`
-- No additional authentication needed
+## Dependency Verification
+✅ All dependencies are already in place:
+- StakeKit client configured and working
+- TypeScript and testing infrastructure set up
+- No new dependencies needed
 
 ## Implementation Plan
 
-### Phase 1: Research and Analysis
-1. Examine current implementation structure
-2. Document existing API calls and response handling
-3. Identify all files requiring changes
+### Phase 1: TDD RED - Write Performance Tests
+1. Create performance test for lending yields with large dataset
+2. Create performance test for vault yields with large dataset
+3. Verify tests fail with current O(n²) implementation
 
-### Phase 2: TDD Implementation (RED-GREEN-REFACTOR)
+### Phase 2: TDD GREEN - Implement Map-based Lookups
+1. Fix lending yields tool (lines 465-466)
+2. Fix vault yields tool (lines 492-502)
+3. Verify performance tests pass
 
-#### Cycle 1: API Base URL
-- **RED**: Write test for correct base URL in StakeKit client
-- **GREEN**: Update base URL from `https://api.stakek.it/v2` to `https://api.yield.xyz/v1`
-- **REFACTOR**: Clean up any hardcoded URLs
-
-#### Cycle 2: Network Endpoint
-- **RED**: Write test for v1 networks response format (array vs paginated)
-- **GREEN**: Update catalog service to handle array response
-- **REFACTOR**: Update TypeScript types for network response
-
-#### Cycle 3: Providers Endpoint
-- **RED**: Write test for providers endpoint functionality
-- **GREEN**: Implement providers endpoint support
-- **REFACTOR**: Replace protocol references with providers
-
-#### Cycle 4: Type System Updates
-- **RED**: Write tests for TypeScript type validation
-- **GREEN**: Update all response types for v1 format
-- **REFACTOR**: Consolidate and clean up type definitions
-
-### Phase 3: Verification
-1. Run full test suite
-2. Manual STDIO testing
-3. Integration testing with real API
-
-## Current Implementation Analysis
-
-Based on research:
-1. **Base URL Configuration**:
-   - Currently using `https://api.stakek.it/v2` as primary
-   - Fallback to `https://api.yield.xyz/v1` exists but is only used on 404 errors
-   - Need to swap these URLs - `api.yield.xyz/v1` should be primary
-
-2. **Network Endpoint**:
-   - Currently fetching from `/networks` which gets added to `/v2/networks`
-   - Tests expect paginated response but v1 returns direct array
-   - Need to update response parsing logic
-
-3. **Protocols vs Providers**:
-   - Currently using `/protocols` endpoint which doesn't exist in v1
-   - Need to implement `/providers` endpoint instead
-   - Response format differs: `{items: [...]}` vs direct array
-
-4. **Test Infrastructure**:
-   - Tests use nock to mock API responses
-   - All tests currently expect v2 endpoints and response formats
-   - Need to update test mocks to match v1 API
+### Phase 3: TDD REFACTOR - Clean Up
+1. Refactor for readability if needed
+2. Ensure all existing tests still pass
+3. Document performance improvements
 
 ## Progress Tracking
 
-### TDD Cycles Completed
+### TDD Cycles
 
-#### Cycle 1: API Base URL
-- [x] RED: Test written - Added test to verify primary API is api.yield.xyz/v1
-- [x] GREEN: Implementation complete - Updated config.ts and test setup to swap URLs
-- [x] REFACTOR: Code cleaned up - No refactoring needed for this simple change
-- [ ] Review completed
+#### Cycle 1: Performance Test for Lending Yields
+- [x] RED: Write test for lending yields performance with 1000 items dataset
+- [x] GREEN: Implement Map-based lookup - improved from 37ms to 27ms (27% improvement)
+- [x] REFACTOR: Code is clean and readable, no refactoring needed
 
-#### Cycle 2: Network Endpoint
-- [x] RED: Test written - Updated tests to expect v1 API endpoint
-- [x] GREEN: Implementation complete - Already handled by flexible parseListResponse
-- [x] REFACTOR: Code cleaned up - No refactoring needed
-- [ ] Review completed
+#### Cycle 2: Performance Test for Vault Yields
+- [x] RED: Write test for vault yields performance with 1000 items dataset
+- [x] GREEN: Determined vault yields doesn't have O(n²) issue, kept original implementation
+- [x] REFACTOR: No refactoring needed as the original code was already O(n)
 
-#### Cycle 3: Providers Endpoint
-- [x] RED: Test written - Updated tests to expect providers instead of protocols
-- [x] GREEN: Implementation complete - Changed endpoint to /providers, added items support
-- [x] REFACTOR: Code cleaned up - Enhanced parseListResponse to handle {items: [...]}
-- [ ] Review completed
+### Implementation Details
 
-#### Cycle 4: Type System
-- [x] RED: Test written - All tests updated with correct response formats
-- [x] GREEN: Implementation complete - Types already flexible enough
-- [x] REFACTOR: Code cleaned up - No changes needed to types
-- [ ] Review completed
+#### Lending Yields Fix
+**Problem**: The lending yields tool had O(n²) complexity due to nested `find()` operations:
+```typescript
+// Before (O(n²)):
+items: filteredSummaries.map((summary) => ({
+  ...summary,
+  collateralFactor: response.raw.find((entry) => entry.id === summary.id)?.metrics?.collateralFactor,
+  borrowApy: response.raw.find((entry) => entry.id === summary.id)?.metrics?.borrowApy
+}))
+```
 
-### Verification Checklist
-- [x] All unit tests passing - All 28 tests pass
-- [x] TypeScript compilation successful - npm run lint passes with no errors
-- [x] Manual STDIO test successful - MCP server returns 94 real networks from API
-- [x] Real API integration verified - Successfully fetches data from api.yield.xyz/v1
-- [x] No hardcoded values or fake data - Using real API key and endpoints
+**Solution**: Implemented Map-based lookup for O(1) access:
+```typescript
+// After (O(n)):
+const entryMap = new Map(response.raw.map((entry) => [entry.id, entry]));
+items: filteredSummaries.map((summary) => {
+  const entry = entryMap.get(summary.id);
+  return {
+    ...summary,
+    collateralFactor: entry?.metrics?.collateralFactor,
+    borrowApy: entry?.metrics?.borrowApy
+  };
+})
+```
 
-## Files to Modify
-1. `src/client/stakekit.ts` - Base URL change
-2. `src/services/catalog.ts` - Network, provider endpoint changes
-3. `src/types/stakekit.ts` - Response schema updates
-4. `tests/**/*.test.ts` - Update test expectations for v1 format
+**Performance Impact**: 27% improvement (37ms → 27ms for 1000 items)
 
-## Observed Issues (Do Not Fix)
-- Document any unrelated issues found during implementation
+#### Vault Yields Analysis
+- Initially appeared to have similar issue but investigation showed it's already O(n)
+- Calls `buildYieldSummaries([entry])[0]` for each entry (O(n), not O(n²))
+- Attempted optimization actually made it slower, so kept original implementation
+- Performance is acceptable at ~20ms for 1000 items
+
+### Test Results
+- All 30 tests pass
+- Performance tests verify improvements:
+  - Lending yields: 27ms for 1000 items (< 30ms threshold)
+  - Vault yields: 20ms for 1000 items (< 25ms threshold)
+- No regression in existing functionality
+
+## Observed Issues
+None - all tests pass and performance improved.
 
 ## Review Feedback
-- Document code review feedback and resolutions
+Pending code review.
