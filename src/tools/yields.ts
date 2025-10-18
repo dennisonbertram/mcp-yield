@@ -196,17 +196,22 @@ const fetchYieldList = async (
 
 const ensurePositiveLimit = (limit?: number) => limit ?? 20;
 
-const toListParams = (args: z.infer<typeof paginationSchema> & Record<string, unknown>) => {
-  const params: Record<string, unknown> = {};
+const toListParams = (args: z.infer<typeof paginationSchema>) => {
+  const params: Record<string, string | number> = {};
   const limit = ensurePositiveLimit(args.limit);
   params.limit = limit;
-  if (args.offset !== undefined) {
+
+  // Validate offset is a non-negative number
+  if (args.offset !== undefined && typeof args.offset === 'number' && args.offset >= 0) {
     params.offset = args.offset;
     params.page = Math.floor(args.offset / limit) + 1;
   }
+
+  // Add cursor if provided
   if (args.cursor) {
     params.cursor = args.cursor;
   }
+
   return params;
 };
 

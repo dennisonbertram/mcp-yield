@@ -76,7 +76,7 @@ export class StakeKitClient {
       };
     } catch (error) {
       const axiosError = error as AxiosError & { code?: string };
-      const status =
+      const status: number | undefined =
         axiosError.response?.status ??
         (axiosError as { status?: number }).status ??
         (axiosError.request as { res?: { statusCode?: number } } | undefined)?.res?.statusCode;
@@ -92,19 +92,24 @@ export class StakeKitClient {
         code: axiosError.code
       });
 
-      if (status === 401) {
+      const isAuthError = status === 401;
+      const isNotFoundOrEmpty = status === 404 || status === 204;
+      const isRetryableError = status !== undefined && RETRY_STATUS_CODES.has(status);
+      const isNetworkError = status === undefined;
+
+      if (isAuthError) {
         childLogger.error('Authentication failed for StakeKit request', { url: config.url });
         throw error;
       }
 
-      if (!useFallback && (status === 404 || status === 204)) {
+      if (!useFallback && isNotFoundOrEmpty) {
         childLogger.info('Retrying StakeKit request via fallback host', {
           url: config.url
         });
         return this.performRequest<T>(config, options, attempt, true);
       }
 
-      if (attempt < MAX_RETRIES && (!status || RETRY_STATUS_CODES.has(status))) {
+      if (attempt < MAX_RETRIES && (isNetworkError || isRetryableError)) {
         await this.delay(attempt);
         return this.performRequest<T>(config, options, attempt + 1, useFallback);
       }
