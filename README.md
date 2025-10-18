@@ -1,220 +1,293 @@
 # MCP Yield Server
 
-The MCP Yield Server exposes StakeKit (yield.xyz) yield intelligence through the [Model Context Protocol](https://modelcontextprotocol.io). It packages a stdio MCP server that surfaces:
+A production-ready Model Context Protocol (MCP) server that provides AI assistants with access to comprehensive DeFi yield data from StakeKit/yield.xyz. Discover and compare staking, lending, and vault opportunities across 50+ networks with real-time APY data and risk metrics.
 
-- Eight discovery tools that query staking, lending, and vault opportunities across supported networks.
-- Six catalog tools covering networks, tokens, and DeFi protocols.
-- Five guided prompts plus dynamic resources to enrich assistant workflows.
+## Features
 
-The server follows the multi-phase plan in [`docs/`](docs/) and is suitable for both automated assistants and manual operators that need consistent access to live yield data.
-
----
+- **14 specialized tools** for querying yield opportunities, networks, tokens, and protocols
+- **5 guided prompts** for common workflows (yield comparison, network due diligence, etc.)
+- **Dynamic resources** providing contextual data for enhanced AI responses
+- **Type-safe API integration** with comprehensive error handling
+- **Multiple transport modes**: stdio (for Claude Desktop) and HTTP (for remote access)
+- **Production-grade logging** with structured output via Pino
 
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18 or newer
 - npm 9+
-- A StakeKit API key (`https://api.stakek.it`)
+- A StakeKit API key from [api.stakek.it](https://api.stakek.it)
 
 ### Installation
+
 ```bash
+# Clone and install dependencies
+git clone <repository-url>
+cd mcp-yield
 npm install
+
+# Configure your API key
 cp .env.example .env
-# edit .env and set STAKEKIT_API_KEY=your_api_key
+# Edit .env and set: STAKEKIT_API_KEY=your_api_key_here
 ```
 
-### Development server
-```bash
-npm run dev
-```
-This runs the stdio server directly with TypeScript support.
+### Build
 
-### Production build
 ```bash
 npm run build
-npm run start:stdio   # stdio transport
-# or
-PORT=3000 npm run start:http   # HTTP transport on the configured port
 ```
-The build command outputs compiled JavaScript to `dist/`. The stdio server reads from `stdin`/`stdout` using the MCP protocol, while the HTTP server exposes `/mcp` (JSON-RPC) and `/health` endpoints for remote orchestration. Streamable HTTP clients must send an `initialize` request first, record the returned `Mcp-Session-Id`, include both `Mcp-Session-Id` and `Mcp-Protocol-Version` headers on follow-up calls, and advertise `Accept: application/json, text/event-stream` to remain spec compliant.
 
----
+## Usage
+
+### Option 1: Claude Desktop Integration (Recommended)
+
+Add this server to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "yield": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/mcp-yield/dist/index.js"
+      ],
+      "env": {
+        "STAKEKIT_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/mcp-yield` with the actual path to your installation.
+
+Restart Claude Desktop and the yield tools will be available in your conversations.
+
+### Option 2: Stdio Mode (Manual Testing)
+
+```bash
+# Start the server in stdio mode
+STAKEKIT_API_KEY=your_key npm run start:stdio
+
+# Test with JSON-RPC commands via stdin
+echo '{"jsonrpc":"2.0","method":"tools/list","id":1,"params":{}}' | \
+  STAKEKIT_API_KEY=your_key node dist/index.js
+```
+
+### Option 3: HTTP Mode (Remote Access)
+
+```bash
+# Start HTTP server on port 3000
+STAKEKIT_API_KEY=your_key PORT=3000 npm run start:http
+
+# The server exposes:
+# - POST /mcp - JSON-RPC endpoint
+# - GET /health - Health check endpoint
+```
+
+## Available Tools
+
+The server provides 14 tools organized into three categories:
+
+### Yield Discovery (8 tools)
+
+- `get-yield-opportunities` - Paginated list of all yield opportunities
+- `get-yield-details` - Detailed breakdown for a specific yield
+- `get-yields-by-network` - Filter yields by blockchain network
+- `get-yields-by-token` - Find yields supporting a specific token
+- `get-staking-yields` - Staking and liquid staking opportunities
+- `get-lending-yields` - Lending markets with collateral metrics
+- `get-vault-yields` - Vault strategies with fee data
+- `get-top-yields` - Highest APY opportunities with filters
+
+### Network & Token Catalog (4 tools)
+
+- `list-supported-chains` - All supported blockchain networks
+- `get-chain-details` - Network metadata and top yields
+- `list-supported-tokens` - Token catalog with network coverage
+- `get-token-details` - Token metadata and supporting yields
+
+### Protocol Analysis (2 tools)
+
+- `list-protocols` - DeFi protocol directory with metrics
+- `get-protocol-details` - Protocol deep-dive and APY statistics
+
+## Guided Prompts
+
+The server includes 5 intelligent prompts to guide common workflows:
+
+- `compare-yields` - Compare multiple yield opportunities side-by-side
+- `find-optimal-yield` - Find best yields matching specific criteria
+- `network-due-diligence` - Generate risk assessment for a network
+- `protocol-risk-review` - Analyze protocol safety and yields
+- `token-yield-availability` - Discover all yield options for a token
 
 ## Configuration
-Environment variables are loaded from `.env` via [`dotenv`](https://www.npmjs.com/package/dotenv).
+
+Environment variables can be set in `.env` or passed directly:
 
 | Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `STAKEKIT_API_KEY` | ✅ | – | StakeKit API key used for every outbound call. |
-| `STAKEKIT_BASE_URL` | ➖ | `https://api.stakek.it/v2` | Primary StakeKit host. |
-| `STAKEKIT_FALLBACK_URL` | ➖ | `https://api.yield.xyz/v1` | Failover host for 404/204 responses. |
-| `LOG_LEVEL` | ➖ | `info` | Pino-style log level for stdout logs. |
-| `PORT` | ➖ | `3000` | Listening port when running the HTTP transport. |
-
-Set variables in `.env` or pass them directly when starting the server:
-```bash
-STAKEKIT_API_KEY=sk_live_your_key npm run start:stdio
-```
-
----
-
-## Available MCP Tools
-
-| Tool | Description | Key Arguments | Example |
-| --- | --- | --- | --- |
-| `get-yield-opportunities` | Paginated feed of all StakeKit yields with metadata. | `limit`, `offset`, `cursor`, `network`, `type` | `{ "method": "tools/call", "params": { "name": "get-yield-opportunities", "arguments": { "limit": 5 }}}` |
-| `get-yield-details` | Detailed breakdown for a single yield opportunity. | `yieldId` | `"arguments": { "yieldId": "ethereum-eth-lido-staking" }` |
-| `get-yields-by-network` | Filter yields by blockchain network id. | `networkId`, pagination fields | `"arguments": { "networkId": "ethereum", "limit": 10 }` |
-| `get-yields-by-token` | Discover yields that accept or reward a token symbol. | `tokenSymbol`, pagination fields | `"arguments": { "tokenSymbol": "ETH" }` |
-| `get-staking-yields` | Staking and liquid staking opportunities. | `limit`, `offset`, `cursor`, `includeLiquid` | `"arguments": { "includeLiquid": true }` |
-| `get-lending-yields` | Lending markets with collateral metrics. | `protocol`, pagination fields | `"arguments": { "protocol": "aave" }` |
-| `get-vault-yields` | Vault strategies including fee data. | `strategy`, pagination fields | `"arguments": { "strategy": "covered" }` |
-| `get-top-yields` | Highest APY opportunities subject to filters. | `limit`, `minTvlUsd`, `type` | `"arguments": { "limit": 3, "minTvlUsd": 100000 }` |
-| `list-supported-chains` | StakeKit network catalog with status flags. | `category`, `includeTestnets` | `"arguments": { "includeTestnets": false }` |
-| `get-chain-details` | Network metadata plus notable yields. | `networkId` | `"arguments": { "networkId": "polygon" }` |
-| `list-supported-tokens` | Token catalog with deduped network coverage. | `networkId`, `symbol`, `limit` | `"arguments": { "limit": 25 }` |
-| `get-token-details` | Token metadata and top supporting yields. | `tokenId` or `symbol`, optional `networkId` | `"arguments": { "symbol": "USDC" }` |
-| `list-protocols` | Protocol list with aggregate yield metrics. | `category`, `chain` | `"arguments": { "chain": "ethereum" }` |
-| `get-protocol-details` | Protocol deep dive and APY stats. | `protocolId` | `"arguments": { "protocolId": "lido" }` |
-
-### Dynamic Resources
-- `yield-detail` → `yield://{yieldId}` JSON summary with peer statistics.
-- `network-detail` → `network://{networkId}` Markdown overview of a network.
-- `token-detail` → `token://{tokenId}` JSON token profile with multi-chain coverage.
-- `protocol-detail` → `protocol://{protocolId}` JSON protocol dossier.
-- `networks-overview` → `networks://all` JSON snapshot grouping networks by category.
-
-### Guided Prompts
-| Prompt | Purpose | Notable Arguments |
-| --- | --- | --- |
-| `compare-yields` | Walkthrough for comparing specific yield IDs. | `yieldIds` (array), `criteria` |
-| `find-optimal-yield` | Assist with network/token constrained yield search. | `networkId`, `tokenSymbol`, `minTvlUsd`, `riskTolerance` |
-| `network-due-diligence` | Generates diligence packet for a network. | `networkId` |
-| `protocol-risk-review` | Risk summary for a protocol + associated yields. | `protocolId` |
-| `token-yield-availability` | Maps deployment options for a token. | `tokenSymbol` |
-
----
+|----------|----------|---------|-------------|
+| `STAKEKIT_API_KEY` | Yes | - | Your StakeKit API key |
+| `STAKEKIT_BASE_URL` | No | `https://api.stakek.it/v2` | Primary API endpoint |
+| `STAKEKIT_FALLBACK_URL` | No | `https://api.yield.xyz/v1` | Fallback endpoint |
+| `LOG_LEVEL` | No | `info` | Logging level (debug, info, warn, error) |
+| `PORT` | No | `3000` | HTTP server port |
 
 ## Testing
 
-### Automated tests
 ```bash
+# Run all tests
 npm test
-```
-Vitest covers the client retry logic, tools, resources, and prompts. Tests use `nock` by default to isolate the StakeKit API. Set `RUN_LIVE_TESTS=1` to enable live integration cases.
 
-### Type checking
-```bash
+# Run tests in watch mode
+npm test -- --watch
+
+# Type checking
 npm run lint
+
+# Run with live API (requires STAKEKIT_API_KEY)
+RUN_LIVE_TESTS=1 npm test
 ```
 
-### Manual API smoke tests
+Test coverage includes:
+- Unit tests for all tools and utilities
+- Integration tests with mocked API responses
+- Type safety validation
+- Error handling scenarios
+
+## Example Usage
+
+### Via Claude Desktop
+
+Once configured, you can ask Claude:
+
+> "Show me the top 5 staking yields on Ethereum with at least $1M TVL"
+
+> "Compare the yields for USDC lending across Aave and Compound"
+
+> "What are the risks of staking ETH with Lido?"
+
+### Via Stdio (Manual)
+
 ```bash
-# list yields via curl
-curl -s "https://api.stakek.it/v2/yields?limit=3" \
-  -H "X-API-KEY: $STAKEKIT_API_KEY" | jq '.data[0]'
+# Get top yields
+echo '{
+  "jsonrpc":"2.0",
+  "method":"tools/call",
+  "id":2,
+  "params":{
+    "name":"get-top-yields",
+    "arguments":{"limit":5,"minTvlUsd":1000000}
+  }
+}' | STAKEKIT_API_KEY=your_key node dist/index.js
 
-# query a single yield
-curl -s "https://api.stakek.it/v2/yields/ethereum-eth-lido-staking" \
-  -H "X-API-KEY: $STAKEKIT_API_KEY" | jq '{id, apy, metadata}'
+# Get chain details
+echo '{
+  "jsonrpc":"2.0",
+  "method":"tools/call",
+  "id":3,
+  "params":{
+    "name":"get-chain-details",
+    "arguments":{"networkId":"ethereum"}
+  }
+}' | STAKEKIT_API_KEY=your_key node dist/index.js
 ```
 
-### MCP stdio smoke tests
+## Docker Deployment
+
 ```bash
-npm run build
-# list tools
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1,"params":{}}' \
-  | STAKEKIT_API_KEY=$STAKEKIT_API_KEY node dist/index.js
+# Build the Docker image
+docker build -t mcp-yield .
 
-# fetch top yields
-echo '{"jsonrpc":"2.0","method":"tools/call","id":2,"params":{"name":"get-top-yields","arguments":{"limit":3}}}' \
-  | STAKEKIT_API_KEY=$STAKEKIT_API_KEY node dist/index.js
+# Run in stdio mode
+docker run --rm -e STAKEKIT_API_KEY=your_key mcp-yield
+
+# Run in HTTP mode
+docker run --rm -p 3000:3000 \
+  -e STAKEKIT_API_KEY=your_key \
+  -e PORT=3000 \
+  mcp-yield npm run start:http
 ```
-
-### MCP HTTP smoke tests
-```bash
-npm run build
-STAKEKIT_API_KEY=$STAKEKIT_API_KEY PORT=3000 npm run start:http &
-SERVER_PID=$!
-sleep 1
-
-# initialize a session and capture the MCP session id header
-INIT_HEADERS=$(mktemp)
-curl -sD "$INIT_HEADERS" -o /tmp/init-response.json http://localhost:3000/mcp \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"manual-smoke","version":"1.0.0"}}}'
-SESSION_ID=$(grep -i 'mcp-session-id' "$INIT_HEADERS" | awk '{print $2}' | tr -d '\r')
-cat /tmp/init-response.json | jq '.result.serverInfo'
-
-# list tools within the established session
-curl -s http://localhost:3000/mcp \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -H 'Mcp-Protocol-Version: 2025-03-26' \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | jq '.result.tools | length'
-
-# tear down the session cleanly
-curl -s -X DELETE http://localhost:3000/mcp \
-  -H "Mcp-Session-Id: $SESSION_ID" \
-  -H 'Mcp-Protocol-Version: 2025-03-26'
-
-kill $SERVER_PID
-wait $SERVER_PID 2>/dev/null || true
-```
-
-
----
 
 ## Troubleshooting
 
-| Symptom | Likely Cause | Resolution |
-| --- | --- | --- |
-| `Authentication failed` errors | Missing or invalid `STAKEKIT_API_KEY`. | Confirm `.env` and export variables before starting the server. |
-| Repeated `429` responses | StakeKit rate limiting. | Back off for a few seconds. The client automatically retries transient errors. |
-| `ToolError: [INTERNAL_ERROR] Invalid URL` | Proxy or base URL misconfiguration. | Ensure `STAKEKIT_BASE_URL` and `STAKEKIT_FALLBACK_URL` include protocol and are reachable without proxies, or set `proxy: false` on axios. |
-| `ZodError` validation failures | Upstream schema drift. | Capture the `structuredContent` payload from logs and update `src/types/stakekit.ts` + relevant parsing logic. |
-| No tools/resources visible | Server not built or env not loaded. | Run `npm run build` and start via `npm run start:stdio` with a configured `.env`. |
+| Issue | Solution |
+|-------|----------|
+| "Authentication failed" errors | Verify `STAKEKIT_API_KEY` is set correctly in `.env` or environment |
+| "Tool not found" in Claude | Restart Claude Desktop after updating config |
+| Rate limiting (429 errors) | Wait a few seconds; the client auto-retries transient errors |
+| Type validation errors | Update to latest version; API schema may have changed |
+| Empty tool responses | Check API key permissions and network connectivity |
 
----
+## Development
 
-## Development Workflow
-1. Create a feature branch from `work`.
-2. Run `npm run lint` and `npm test` locally.
-3. Update documentation alongside code changes.
-4. Commit with clear messages (e.g., `feat: add get-top-yields tool`).
-5. Submit a PR with the Vitest output attached.
+### Project Structure
 
-The repository uses strict TypeScript with `moduleResolution=node` and ships only compiled artifacts in `dist/`.
-
----
-
-## Deployment
-
-### Docker
-A production container is supplied via `Dockerfile`.
-
-```bash
-docker build -t mcp-yield .
-docker run --rm -e STAKEKIT_API_KEY=sk_live_your_key mcp-yield
+```
+mcp-yield/
+├── src/
+│   ├── tools/          # Tool implementations (yields, chains)
+│   ├── resources/      # Dynamic resources
+│   ├── prompts/        # Guided prompts
+│   ├── client/         # StakeKit API client
+│   ├── types/          # TypeScript types and Zod schemas
+│   ├── services/       # Business logic
+│   └── utils/          # Shared utilities
+├── tests/              # Test suites
+├── docs/               # Planning and documentation
+│   └── archive/        # Historical test reports
+└── dist/               # Compiled output
 ```
 
-The default command launches the stdio transport. When embedding in another process (e.g., MCP-compatible orchestrators), connect the container’s stdio to your manager or wrap it with a lightweight bridge.
+### Development Workflow
 
-### Manual
-- Ensure `.env` is populated.
-- Run `npm run build`.
-- Start with `npm run start:stdio` and pipe JSON-RPC requests to stdin.
+1. Create feature branch from `main`
+2. Write tests first (TDD approach)
+3. Implement features with type safety
+4. Run `npm run lint && npm test` before committing
+5. Update documentation alongside code changes
 
-For managed environments, store secrets using platform secret stores (AWS Secrets Manager, GCP Secret Manager, 1Password) and inject them as environment variables.
+### Important Technical Notes
 
----
+- **Strict TypeScript**: No `any` types; comprehensive type safety throughout
+- **Error handling**: All API errors are caught and formatted as MCP-compatible errors
+- **Schema validation**: Zod schemas validate all API responses
+- **Filtering**: Malformed API data is filtered out gracefully
+- **Retry logic**: Automatic retry with exponential backoff for transient failures
 
-## Appendix
-- Planning artifacts: [`docs/`](docs/)
-- StakeKit API Reference: <https://docs.yield.xyz/>
-- Model Context Protocol: <https://modelcontextprotocol.io>
-- Issue tracker: submit bugs via GitHub issues.
+## Documentation
 
+- **Planning docs**: See `docs/` for detailed planning and implementation notes
+- **Test archive**: Historical test reports in `docs/archive/`
+- **Development log**: `DEVELOPMENT.md` contains TDD methodology and progress
+- **Fix summaries**: Technical details in `CODE_REVIEW_FIX_PLAN.md`, `PARALLEL_FIX_SUMMARY.md`, etc.
+
+## Resources
+
+- [Model Context Protocol Specification](https://modelcontextprotocol.io)
+- [StakeKit API Documentation](https://docs.yield.xyz/)
+- [Claude Desktop](https://claude.ai/download)
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass and type checking succeeds
+5. Submit a pull request with a clear description
+
+## Support
+
+For issues or questions:
+- GitHub Issues: Report bugs or request features
+- Documentation: Check `docs/` for detailed technical information
