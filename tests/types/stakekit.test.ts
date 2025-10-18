@@ -173,9 +173,50 @@ describe('StakeKit Type Schemas', () => {
   });
 
   describe('stakeKitYieldListResponseSchema - response validation', () => {
-    it('should parse valid paginated response', () => {
+    it('should parse valid paginated response with "data" field (matching actual API)', () => {
+      // This test represents the ACTUAL StakeKit API v2 response structure
+      const actualApiResponse = {
+        data: [
+          { id: 'yield-1', name: 'Yield 1' },
+          { id: 'yield-2', name: 'Yield 2' },
+        ],
+        limit: 10,
+        page: 1,
+        hasNextPage: true,
+        totalCount: 50,
+      };
+
+      const result = stakeKitYieldListResponseSchema.parse(actualApiResponse);
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0].id).toBe('yield-1');
+      expect(result.limit).toBe(10);
+      expect(result.page).toBe(1);
+      expect(result.hasNextPage).toBe(true);
+      expect(result.totalCount).toBe(50);
+    });
+
+    it('should accept response with extra fields due to passthrough', () => {
+      const responseWithItems = {
+        data: [
+          { id: 'yield-1', name: 'Yield 1' },
+          { id: 'yield-2', name: 'Yield 2' },
+        ],
+        items: [ // This is extra field that passthrough allows
+          { id: 'old-1', name: 'Old 1' },
+        ],
+        limit: 10,
+        page: 1,
+      };
+
+      // The schema should parse "data" and pass through "items" as extra field
+      const result = stakeKitYieldListResponseSchema.parse(responseWithItems);
+      expect(result.data).toHaveLength(2);
+      expect(result.items).toBeDefined(); // Passed through as extra field
+    });
+
+    it('should parse response with pagination metadata', () => {
       const validResponse = {
-        items: [
+        data: [
           { id: 'yield-1', name: 'Yield 1' },
           { id: 'yield-2', name: 'Yield 2' },
         ],
@@ -186,13 +227,13 @@ describe('StakeKit Type Schemas', () => {
       };
 
       const result = stakeKitYieldListResponseSchema.parse(validResponse);
-      expect(result.items).toHaveLength(2);
+      expect(result.data).toHaveLength(2);
       expect(result.totalCount).toBe(50);
     });
 
-    it('should handle response with malformed yield items', () => {
+    it('should handle response with malformed yield data', () => {
       const responseWithBadData = {
-        items: [
+        data: [
           { id: 'valid-1' }, // Valid
           { notId: 'invalid' }, // Missing required 'id'
           null, // Null item
@@ -200,15 +241,15 @@ describe('StakeKit Type Schemas', () => {
         ],
       };
 
-      // Should throw because items don't match schema
+      // Should throw because data items don't match schema
       expect(() => stakeKitYieldListResponseSchema.parse(responseWithBadData)).toThrow();
     });
 
     it('should validate response metadata fields', () => {
       const invalidResponses = [
-        { items: [], limit: 'ten' }, // limit should be number
-        { items: [], page: true }, // page should be number
-        { items: [], hasNextPage: 'yes' }, // hasNextPage should be boolean
+        { data: [], limit: 'ten' }, // limit should be number
+        { data: [], page: true }, // page should be number
+        { data: [], hasNextPage: 'yes' }, // hasNextPage should be boolean
       ];
 
       for (const invalidResponse of invalidResponses) {

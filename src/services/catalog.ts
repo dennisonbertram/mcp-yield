@@ -170,20 +170,20 @@ export const catalogService = {
     return withCache(YIELD_CACHE, 'yields', async () => {
       const { data, source } = await stakeKitClient.get<unknown>('/yields', { limit: 200 });
       const parsed = parseYieldResponse(data, 'yields');
-      return { items: parsed.items, source, fetchedAt: new Date().toISOString() };
+      return { items: parsed.data, source, fetchedAt: new Date().toISOString() };
     });
   },
 
   async getYieldsForNetwork(networkId: string): Promise<StakeKitYield[]> {
     const { data } = await stakeKitClient.get<unknown>('/yields', { network: networkId, limit: 50 });
     const parsed = parseYieldResponse(data, 'yields by network');
-    return parsed.items;
+    return parsed.data;
   },
 
   async getYieldsForToken(symbol: string): Promise<StakeKitYield[]> {
     const { data } = await stakeKitClient.get<unknown>('/yields', { token: symbol, limit: 100 });
     const parsed = parseYieldResponse(data, 'yields by token');
-    return parsed.items;
+    return parsed.data;
   },
 
   async getYieldsForProtocol(protocol: StakeKitProtocol): Promise<StakeKitYield[]> {
