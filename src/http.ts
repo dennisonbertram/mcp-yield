@@ -284,5 +284,21 @@ const isMainModule = () => {
 };
 
 if (isMainModule()) {
+  // Add global error handlers
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled rejection', {
+      reason: reason instanceof Error ? reason.message : String(reason)
+    });
+    process.exit(1);
+  });
+
+  process.on('uncaughtException', (error) => {
+    logger.error('Uncaught exception', {
+      error: error.message,
+      stack: error.stack
+    });
+    process.exit(1);
+  });
+
   void startHttpServer();
 }

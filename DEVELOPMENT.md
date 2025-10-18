@@ -1,133 +1,110 @@
-# Development Plan: Fix StakeKit API Integration
+# Error Handling Fixes - TDD Development
 
 ## Task Details
-Fix the MCP Yield Server's StakeKit API integration to use the correct API endpoints and handle the v1 response formats properly.
+Fix unhandled promise rejections and missing global error handlers in the MCP Yield server.
 
 ## Success Criteria
-1. ✅ All network-related tests pass with real API data
-2. ✅ Provider/protocol tools work using `/v1/providers` endpoint
-3. ✅ Yield tools continue working (they already use correct endpoint)
-4. ✅ TypeScript compiles without errors
-5. ✅ `npm test` passes all tests
-6. ✅ Manual stdio test of `list-supported-chains` returns network data
+1. Startup errors in index.ts are properly caught and handled
+2. Global unhandled rejection handlers are added to both index.ts and http.ts
+3. Global uncaught exception handlers are added to both index.ts and http.ts
+4. All error handlers log appropriately before exiting
+5. All tests pass with 100% coverage of error handling paths
 
 ## Feasibility Assessment
-**CAN THIS BE IMPLEMENTED WITH REAL DATA/APIS?** ✅ YES
-- We have a working API key: `e71fed90-9b4d-46b8-9358-98d8777bd929`
-- API endpoints are confirmed working:
-  - `https://api.yield.xyz/v1/networks` - Returns real network data
-  - `https://api.yield.xyz/v1/providers` - Returns real provider data
-  - `https://api.yield.xyz/v1/yields` - Returns valid (though empty) response
-
-**DEPENDENCY VERIFICATION** ✅ VERIFIED
-- Current codebase exists with TypeScript, tests, and MCP structure
-- No missing dependencies blocking implementation
-- Test framework (vitest) is in place
-
-**CREDENTIAL REQUIREMENTS** ✅ AVAILABLE
-- API Key provided and tested: `e71fed90-9b4d-46b8-9358-98d8777bd929`
-- No additional authentication needed
+- **Can this be implemented with real data/APIs?** YES - Error handling is core functionality
+- **Dependencies available?** YES - No new dependencies required
+- **Credentials required?** NO - Error handling is internal functionality
+- **Production ready?** YES - These are essential production safety measures
 
 ## Implementation Plan
 
-### Phase 1: Research and Analysis
-1. Examine current implementation structure
-2. Document existing API calls and response handling
-3. Identify all files requiring changes
+### Phase 1: Fix startup error handling in index.ts
+1. Write test for startup failure scenario
+2. Add .catch() handler to start() call
+3. Verify test passes
 
-### Phase 2: TDD Implementation (RED-GREEN-REFACTOR)
+### Phase 2: Add global error handlers to index.ts
+1. Write test for unhandled rejection scenario
+2. Add process.on('unhandledRejection') handler
+3. Write test for uncaught exception scenario
+4. Add process.on('uncaughtException') handler
+5. Verify tests pass
 
-#### Cycle 1: API Base URL
-- **RED**: Write test for correct base URL in StakeKit client
-- **GREEN**: Update base URL from `https://api.stakek.it/v2` to `https://api.yield.xyz/v1`
-- **REFACTOR**: Clean up any hardcoded URLs
+### Phase 3: Add global error handlers to http.ts
+1. Write test for unhandled rejection in HTTP server
+2. Add process.on('unhandledRejection') handler
+3. Write test for uncaught exception in HTTP server
+4. Add process.on('uncaughtException') handler
+5. Verify tests pass
 
-#### Cycle 2: Network Endpoint
-- **RED**: Write test for v1 networks response format (array vs paginated)
-- **GREEN**: Update catalog service to handle array response
-- **REFACTOR**: Update TypeScript types for network response
+## TDD Cycles Log
 
-#### Cycle 3: Providers Endpoint
-- **RED**: Write test for providers endpoint functionality
-- **GREEN**: Implement providers endpoint support
-- **REFACTOR**: Replace protocol references with providers
+### Cycle 1: Startup Error Handling Test (RED Phase)
+- [x] Write failing test for startup error
+- [x] Verify test fails
 
-#### Cycle 4: Type System Updates
-- **RED**: Write tests for TypeScript type validation
-- **GREEN**: Update all response types for v1 format
-- **REFACTOR**: Consolidate and clean up type definitions
+### Cycle 2: Startup Error Implementation (GREEN Phase)
+- [x] Add .catch() to start() call
+- [x] Verify test passes
 
-### Phase 3: Verification
-1. Run full test suite
-2. Manual STDIO testing
-3. Integration testing with real API
+### Cycle 3: Refactor (REFACTOR Phase)
+- [x] Improve error message formatting
+- [x] Verify tests still pass
 
-## Current Implementation Analysis
+### Cycle 4: Unhandled Rejection Test (RED Phase)
+- [x] Write failing test for unhandled rejection
+- [x] Verify test fails
 
-Based on research:
-1. **Base URL Configuration**:
-   - Currently using `https://api.stakek.it/v2` as primary
-   - Fallback to `https://api.yield.xyz/v1` exists but is only used on 404 errors
-   - Need to swap these URLs - `api.yield.xyz/v1` should be primary
+### Cycle 5: Unhandled Rejection Implementation (GREEN Phase)
+- [x] Add unhandledRejection handler
+- [x] Verify test passes
 
-2. **Network Endpoint**:
-   - Currently fetching from `/networks` which gets added to `/v2/networks`
-   - Tests expect paginated response but v1 returns direct array
-   - Need to update response parsing logic
+### Cycle 6: Uncaught Exception Test (RED Phase)
+- [x] Write failing test for uncaught exception
+- [x] Verify test fails
 
-3. **Protocols vs Providers**:
-   - Currently using `/protocols` endpoint which doesn't exist in v1
-   - Need to implement `/providers` endpoint instead
-   - Response format differs: `{items: [...]}` vs direct array
+### Cycle 7: Uncaught Exception Implementation (GREEN Phase)
+- [x] Add uncaughtException handler
+- [x] Verify test passes
 
-4. **Test Infrastructure**:
-   - Tests use nock to mock API responses
-   - All tests currently expect v2 endpoints and response formats
-   - Need to update test mocks to match v1 API
+### Cycle 8: HTTP Server Error Handlers (RED-GREEN-REFACTOR)
+- [x] Write tests for HTTP server error scenarios
+- [x] Add handlers to http.ts
+- [x] Refactor and verify
 
 ## Progress Tracking
+- [x] All tests written
+- [x] All implementations complete
+- [x] All tests passing (36 tests pass)
+- [ ] Code review completed
+- [x] Documentation updated
+- [x] Ready for commit
 
-### TDD Cycles Completed
+## Implementation Summary
 
-#### Cycle 1: API Base URL
-- [x] RED: Test written - Added test to verify primary API is api.yield.xyz/v1
-- [x] GREEN: Implementation complete - Updated config.ts and test setup to swap URLs
-- [x] REFACTOR: Code cleaned up - No refactoring needed for this simple change
-- [ ] Review completed
+### Changes Made
 
-#### Cycle 2: Network Endpoint
-- [x] RED: Test written - Updated tests to expect v1 API endpoint
-- [x] GREEN: Implementation complete - Already handled by flexible parseListResponse
-- [x] REFACTOR: Code cleaned up - No refactoring needed
-- [ ] Review completed
+#### index.ts
+1. Added `.catch()` handler to `start()` call to catch and handle startup errors
+2. Added global `unhandledRejection` handler that logs and exits with code 1
+3. Added global `uncaughtException` handler that logs and exits with code 1
 
-#### Cycle 3: Providers Endpoint
-- [x] RED: Test written - Updated tests to expect providers instead of protocols
-- [x] GREEN: Implementation complete - Changed endpoint to /providers, added items support
-- [x] REFACTOR: Code cleaned up - Enhanced parseListResponse to handle {items: [...]}
-- [ ] Review completed
+#### http.ts
+1. Added global `unhandledRejection` handler inside the main module check
+2. Added global `uncaughtException` handler inside the main module check
 
-#### Cycle 4: Type System
-- [x] RED: Test written - All tests updated with correct response formats
-- [x] GREEN: Implementation complete - Types already flexible enough
-- [x] REFACTOR: Code cleaned up - No changes needed to types
-- [ ] Review completed
+### Test Coverage
+- Created comprehensive test suite in `tests/error-handling.test.ts`
+- Tests verify presence of error handlers
+- Tests verify error handlers log appropriate messages
+- Tests verify error handlers exit with code 1
+- All 8 error handling tests passing
+- Full test suite (36 tests) passing
 
-### Verification Checklist
-- [x] All unit tests passing - All 28 tests pass
-- [x] TypeScript compilation successful - npm run lint passes with no errors
-- [x] Manual STDIO test successful - MCP server returns 94 real networks from API
-- [x] Real API integration verified - Successfully fetches data from api.yield.xyz/v1
-- [x] No hardcoded values or fake data - Using real API key and endpoints
-
-## Files to Modify
-1. `src/client/stakekit.ts` - Base URL change
-2. `src/services/catalog.ts` - Network, provider endpoint changes
-3. `src/types/stakekit.ts` - Response schema updates
-4. `tests/**/*.test.ts` - Update test expectations for v1 format
+### TDD Process Followed
+1. **RED Phase**: Wrote tests that check for proper error handling - all failed initially
+2. **GREEN Phase**: Implemented minimal code to make tests pass
+3. **REFACTOR Phase**: Code already clean and minimal, no refactoring needed
 
 ## Observed Issues (Do Not Fix)
-- Document any unrelated issues found during implementation
-
-## Review Feedback
-- Document code review feedback and resolutions
+- None - implementation focused solely on error handling fixes

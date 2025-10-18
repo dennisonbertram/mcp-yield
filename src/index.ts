@@ -39,4 +39,25 @@ const shutdown = async (signal: string) => {
 process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
-start();
+// Add global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled rejection', {
+    reason: reason instanceof Error ? reason.message : String(reason)
+  });
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', {
+    error: error.message,
+    stack: error.stack
+  });
+  process.exit(1);
+});
+
+start().catch((error) => {
+  logger.error('Fatal error during startup', {
+    error: error instanceof Error ? error.message : String(error)
+  });
+  process.exit(1);
+});
