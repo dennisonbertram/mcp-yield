@@ -78,7 +78,7 @@ describe('Type Safety Integration Tests', () => {
 
     it('should handle deeply nested malformed yield data', async () => {
       const complexYieldResponse = {
-        data: [
+        items: [
           // Valid yield
           {
             id: 'yield-1',
@@ -153,7 +153,7 @@ describe('Type Safety Integration Tests', () => {
       };
 
       const validYields = {
-        data: [
+        items: [
           {
             id: 'yield-1',
             name: 'ETH Yield',
@@ -248,7 +248,7 @@ describe('Type Safety Integration Tests', () => {
 
       nock('https://api.yield.xyz')
         .get('/v1/tokens')
-        .reply(200, { data: [] });
+        .reply(200, { items: [] });
 
       nock('https://api.yield.xyz')
         .get('/v1/providers')

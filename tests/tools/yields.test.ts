@@ -22,7 +22,7 @@ const callTool = async (server: McpServer & { _registeredTools: Record<string, a
 };
 
 const baseListResponse = {
-  data: [
+  items: [
     {
       id: 'ethereum-eth-lido-staking',
       name: 'Lido Staked ETH',
@@ -62,7 +62,7 @@ const baseListResponse = {
 };
 
 const lendingResponse = {
-  data: [
+  items: [
     {
       id: 'ethereum-usdc-aave',
       name: 'Aave USDC Lending',
@@ -124,7 +124,7 @@ describe('yield tools', () => {
     const scope = nock('https://api.yield.xyz')
       .get('/v1/yields')
       .query((params) => params.network === 'nonexistent')
-      .reply(200, { data: [], limit: 20 });
+      .reply(200, { items: [], limit: 20 });
     const server = createServer();
     await expect(callTool(server, 'get-yields-by-network', { networkId: 'nonexistent' })).rejects.toThrow(
       /No yields found/
@@ -172,7 +172,7 @@ describe('yield tools', () => {
 
   it('returns vault information', async () => {
     const vaultResponse = {
-      data: [
+      items: [
         {
           id: 'ethereum-eth-vault',
           name: 'ETH Vault',

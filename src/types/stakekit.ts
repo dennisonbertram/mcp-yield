@@ -26,6 +26,14 @@ export const rewardComponentSchema = z
   })
   .passthrough();
 
+export const rewardRateSchema = z
+  .object({
+    total: z.number().optional(),
+    rateType: z.string().optional(),
+    components: z.array(rewardComponentSchema).optional()
+  })
+  .passthrough();
+
 export const rewardSchema = z
   .object({
     token: tokenRefSchema.optional(),
@@ -83,6 +91,7 @@ export const stakeKitYieldSchema = z
     type: z.string().optional(),
     apy: z.number().optional(),
     apr: z.number().optional(),
+    rewardRate: rewardRateSchema.optional(),
     tvl: z.number().optional(),
     tvlUsd: z.number().optional(),
     tvlUsd24hAgo: z.number().optional(),
@@ -141,7 +150,7 @@ export const stakeKitYieldSchema = z
 
 export const stakeKitYieldListResponseSchema = z
   .object({
-    data: z.array(stakeKitYieldSchema),
+    items: z.array(stakeKitYieldSchema),
     limit: z.number().optional(),
     page: z.number().optional(),
     offset: z.number().optional(),

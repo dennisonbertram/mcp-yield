@@ -43,7 +43,7 @@ const generateLargeLendingDataset = (size: number) => {
       token: { symbol: 'USDC', network: 'ethereum' }
     });
   }
-  return { data };
+  return { items: data };
 };
 
 const generateLargeVaultDataset = (size: number) => {
@@ -70,7 +70,7 @@ const generateLargeVaultDataset = (size: number) => {
       token: { symbol: 'ETH', network: 'ethereum' }
     });
   }
-  return { data };
+  return { items: data };
 };
 
 describe('Yield Tools Performance', () => {

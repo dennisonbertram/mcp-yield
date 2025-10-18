@@ -108,7 +108,7 @@ const getYieldType = (entry: StakeKitYield) =>
   entry.type ?? entry.metadata?.type ?? entry.metadata?.category ?? entry.category ?? 'unknown';
 
 const getApy = (entry: StakeKitYield) =>
-  entry.apy ?? entry.metrics?.apy ?? entry.metrics?.apr ?? entry.apr ?? null;
+  entry.rewardRate?.total ?? entry.apy ?? entry.metrics?.apy ?? entry.metrics?.apr ?? entry.apr ?? null;
 
 const getTvlUsd = (entry: StakeKitYield) => entry.tvlUsd ?? entry.metrics?.tvlUsd ?? entry.tvl ?? null;
 
@@ -173,7 +173,7 @@ const fetchYieldList = async (
       requestId
     });
     const parsed = stakeKitYieldListResponseSchema.parse(data);
-    const deduped = dedupeById(parsed.data);
+    const deduped = dedupeById(parsed.items);
     return {
       raw: deduped,
       summaries: buildYieldSummaries(deduped),

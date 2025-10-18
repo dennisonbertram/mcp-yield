@@ -1,7 +1,8 @@
 import { config as loadEnv } from 'dotenv';
 import { z } from 'zod';
 
-loadEnv();
+// Load environment variables without debug output
+loadEnv({ debug: false });
 
 const envSchema = z.object({
   STAKEKIT_API_KEY: z

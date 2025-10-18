@@ -89,7 +89,7 @@ const providersResponse = {
 };
 
 const yieldsResponse = {
-  data: [
+  items: [
     {
       id: 'ethereum-eth-lido-staking',
       name: 'Lido Staked ETH',
