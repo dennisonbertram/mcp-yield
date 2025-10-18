@@ -91,7 +91,7 @@ export const stakeKitYieldSchema = z
     type: z.string().optional(),
     apy: z.number().optional(),
     apr: z.number().optional(),
-    rewardRate: rewardRateSchema.optional(),
+    rewardRate: z.union([z.number(), rewardRateSchema]).optional(),
     tvl: z.number().optional(),
     tvlUsd: z.number().optional(),
     tvlUsd24hAgo: z.number().optional(),
@@ -150,7 +150,7 @@ export const stakeKitYieldSchema = z
 
 export const stakeKitYieldListResponseSchema = z
   .object({
-    items: z.array(stakeKitYieldSchema),
+    data: z.array(stakeKitYieldSchema),
     limit: z.number().optional(),
     page: z.number().optional(),
     offset: z.number().optional(),
