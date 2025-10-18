@@ -137,7 +137,18 @@ class HttpSessionRegistry {
       (session) => session.lastUsed < cutoff && !session.closing
     );
 
+    // Prevent race condition: Use atomic flag check to ensure each session
+    // is only destroyed once, even with concurrent evictIdleSessions calls
+    const toDestroy: SessionContext[] = [];
     for (const session of staleSessions) {
+      if (!session.closing) {
+        session.closing = true; // Set flag atomically before async operations
+        toDestroy.push(session);
+      }
+    }
+
+    // Destroy only the sessions we successfully marked for destruction
+    for (const session of toDestroy) {
       logger.info('Evicting idle MCP HTTP session', {
         transport: 'http',
         sessionId: session.id,
