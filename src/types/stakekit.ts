@@ -12,6 +12,20 @@ export const tokenRefSchema = z
   })
   .passthrough();
 
+/**
+ * Schema for reward component details.
+ * Provides stronger type validation for reward-related data.
+ */
+export const rewardComponentSchema = z
+  .object({
+    rate: z.number().optional(),
+    rateType: z.string().optional(),
+    token: tokenRefSchema.optional(),
+    yieldSource: z.string().optional(),
+    description: z.string().optional()
+  })
+  .passthrough();
+
 export const rewardSchema = z
   .object({
     token: tokenRefSchema.optional(),
@@ -19,7 +33,9 @@ export const rewardSchema = z
     apy: z.number().optional(),
     apr: z.number().optional(),
     rewardRate: z.number().optional(),
-    rewardType: z.string().optional()
+    rewardType: z.string().optional(),
+    // Support for detailed reward components
+    components: z.array(rewardComponentSchema).optional()
   })
   .passthrough();
 
@@ -137,6 +153,7 @@ export const stakeKitYieldListResponseSchema = z
   })
   .passthrough();
 
+export type RewardComponent = z.infer<typeof rewardComponentSchema>;
 export type StakeKitYield = z.infer<typeof stakeKitYieldSchema>;
 export type StakeKitYieldListResponse = z.infer<typeof stakeKitYieldListResponseSchema>;
 

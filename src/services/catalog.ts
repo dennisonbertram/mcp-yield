@@ -24,22 +24,86 @@ const TOKEN_CACHE = new TTLCache<CachedList<StakeKitToken>>(5 * 60 * 1000);
 const PROTOCOL_CACHE = new TTLCache<CachedList<StakeKitProtocol>>(5 * 60 * 1000);
 const YIELD_CACHE = new TTLCache<CachedList<StakeKitYield>>(5 * 60 * 1000);
 
+/**
+ * Safely parses an array of items, filtering out malformed data.
+ * This function gracefully handles API responses with invalid or incomplete data.
+ */
+const safeParseArray = <T>(schema: z.ZodType<T>, items: unknown[]): T[] => {
+  const validItems: T[] = [];
+
+  for (const item of items) {
+    // Skip null and undefined items
+    if (item == null) {
+      continue;
+    }
+
+    try {
+      // Try to parse the item with the schema
+      const parsed = schema.parse(item);
+      validItems.push(parsed);
+    } catch {
+      // Skip items that don't match the schema
+      // This allows graceful handling of malformed data from external APIs
+      continue;
+    }
+  }
+
+  return validItems;
+};
+
+/**
+ * Extracts array data from various API response formats.
+ * Supports direct arrays, wrapped formats ({ data: [...] }), and v1 API format ({ items: [...] }).
+ */
+const extractArrayFromResponse = (data: unknown): unknown[] | null => {
+  // Direct array
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  // Object wrapper formats
+  if (data && typeof data === 'object') {
+    // { data: [...] } format
+    if ('data' in data) {
+      const wrapped = (data as { data: unknown }).data;
+      if (Array.isArray(wrapped)) {
+        return wrapped;
+      }
+    }
+
+    // v1 API { items: [...] } format
+    if ('items' in data) {
+      const wrapped = (data as { items: unknown }).items;
+      if (Array.isArray(wrapped)) {
+        return wrapped;
+      }
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Parses API response data into a typed array, handling various response formats
+ * and gracefully filtering out malformed items.
+ */
 const parseListResponse = <T>(schema: z.ZodType<T>, data: unknown, endpoint: string): T[] => {
   try {
-    if (Array.isArray(data)) {
-      return schema.array().parse(data);
+    // Try to extract array from response
+    const arrayData = extractArrayFromResponse(data);
+
+    if (arrayData !== null) {
+      return safeParseArray(schema, arrayData);
     }
-    if (data && typeof data === 'object' && 'data' in data) {
-      const wrapped = (data as { data: unknown }).data;
-      return schema.array().parse(wrapped);
+
+    // If not an array format, try to parse as single item
+    try {
+      const parsed = schema.parse(data);
+      return [parsed];
+    } catch {
+      // If single item parse fails, return empty array
+      return [];
     }
-    // Handle v1 API providers format: {items: [...]}
-    if (data && typeof data === 'object' && 'items' in data) {
-      const wrapped = (data as { items: unknown }).items;
-      return schema.array().parse(wrapped);
-    }
-    const parsed = schema.parse(data);
-    return [parsed];
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createUpstreamError(`Unexpected response format from ${endpoint}`, error.flatten());
