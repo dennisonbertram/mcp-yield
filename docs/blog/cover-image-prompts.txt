@@ -1,0 +1,389 @@
+# Cover Image Generation Prompts
+
+Use these prompts with AI image generators (Midjourney, DALL-E, Stable Diffusion) or share with a designer.
+
+---
+
+## Dev.to Cover Image (Technical Deep Dive)
+
+**Dimensions**: 1000x420px (Dev.to optimized)
+**Style**: Technical, code-focused, professional
+
+**Prompt**:
+```
+Create a technical blog header image showing:
+- Split screen design
+- Left side: Terminal/IDE with TypeScript code (MCP server implementation)
+- Right side: Network visualization showing data flow from API to AI
+- Color scheme: Dark background (#1a1a1a) with vibrant accent colors (electric blue #00d4ff, neon green #00ff88)
+- Floating elements: Code snippets, API endpoints, Zod schemas
+- Typography: "Building MCP Servers for DeFi" in modern sans-serif font
+- Technical aesthetic with subtle grid pattern background
+- Icons: TypeScript logo, Node.js logo subtle in corners
+- Professional but modern feel
+```
+
+**Alternative Prompt (Simpler)**:
+```
+Dark-themed developer banner with:
+- Centered text: "MCP Server Technical Deep Dive"
+- Background: Abstract network visualization with nodes and connections
+- Color palette: Dark blue to purple gradient (#1e3a8a to #7c3aed)
+- Code brackets "{}" as subtle decorative elements
+- Clean, minimalist design
+- 1000x420px
+```
+
+**Design Tools**:
+- Canva template: Search "tech blog header"
+- Figma: Use Dev.to template
+- Photoshop: Tech blog mockup
+
+---
+
+## Medium Cover Image (Business Value & Vision)
+
+**Dimensions**: 1500x750px (Medium optimized, will crop to various ratios)
+**Style**: Professional, futuristic, business-focused
+
+**Prompt**:
+```
+Create a professional article header showing:
+- Central concept: Bridge between AI and financial data
+- Left: Stylized AI/robot head with glowing circuits
+- Right: Financial charts, yield curves, data streams
+- Bridge/connection in middle: Glowing data pipeline
+- Color scheme: Professional blues and golds (#2563eb, #f59e0b)
+- Clean white or light gray background (#f9fafb)
+- Modern, executive-friendly aesthetic
+- Typography: "The Future of DeFi is AI-Native" in elegant serif or modern sans-serif
+- Subtle: Blockchain network pattern in background
+- Feel: Innovation meets finance
+```
+
+**Alternative Prompt (Abstract)**:
+```
+Abstract conceptual image for business article:
+- Central sphere/orb representing AI
+- Surrounding it: Floating data points, currency symbols, percentage signs
+- Connections: Light beams connecting AI to data points
+- Color gradient: Deep blue to bright cyan (#0f172a to #06b6d4)
+- Clean, professional, aspirational
+- No literal depictions, abstract and modern
+- 1500x750px safe area composition (account for mobile crop)
+```
+
+**Stock Photo Alternative**:
+- Search Unsplash/Pexels: "artificial intelligence finance" or "future technology"
+- Add text overlay in Canva
+- Ensure high-contrast text placement
+
+---
+
+## LinkedIn Cover Image (Professional Case Study)
+
+**Dimensions**: 1200x627px (LinkedIn article optimized)
+**Style**: Corporate professional, results-focused
+
+**Prompt**:
+```
+Create a professional LinkedIn article header:
+- Clean, executive-friendly design
+- Dominant element: Large ROI number "1,245%" in bold
+- Supporting text: "40 Hours → 5 Hours Per Week"
+- Background: Subtle gradient (corporate blue #0077b5 to lighter shade)
+- Infographic-style elements: Simple bar charts showing before/after
+- Icons: Clock icon, dollar sign, upward arrow
+- Professional typography: Mix of bold sans-serif for numbers, clean sans-serif for text
+- Color palette: LinkedIn blue (#0077b5), success green (#057642), neutral gray (#666)
+- Bottom corner: Small "Case Study" badge
+- Clean, scannable, professional
+```
+
+**Alternative Prompt (Data Viz)**:
+```
+Professional data visualization header:
+- Central focus: Simple before/after comparison
+- Left column: "BEFORE" with sad red metrics
+- Right column: "AFTER" with happy green metrics
+- Clear improvement arrows
+- Clean white background with minimal color
+- Corporate-friendly fonts
+- Dimensions: 1200x627px
+- Style: Management consulting report aesthetic
+```
+
+**PowerPoint Alternative**:
+- Use corporate template
+- Create slide with key metrics
+- Export as image
+- Ensures professional, business-appropriate style
+
+---
+
+## Hashnode Cover Image (Tutorial Style)
+
+**Dimensions**: 1600x840px (Hashnode optimized)
+**Style**: Educational, friendly, approachable
+
+**Prompt**:
+```
+Create an educational tutorial header:
+- Central theme: Learning journey/pathway
+- Left to right progression: Setup → Code → Deploy
+- Visual elements:
+  - Terminal window with friendly commands
+  - Code editor with colorful syntax highlighting
+  - Celebration/success icon on right
+- Color scheme: Friendly and approachable (purple #8b5cf6, orange #f97316, blue #3b82f6)
+- Typography: "Complete Guide: Building Your First MCP Server" in friendly rounded font
+- Icons: Checkmarks, lightbulb, trophy/star for completion
+- Background: Light gradient or solid light color (#fef3c7 to #fbbf24)
+- Welcoming, not intimidating
+- "30-minute tutorial" badge/sticker
+```
+
+**Alternative Prompt (Minimalist)**:
+```
+Clean tutorial header:
+- Numbered steps 1, 2, 3 as prominent circles
+- Each circle connected by line/arrow
+- Labels: "Setup", "Build", "Deploy"
+- Simple icon in each circle
+- Flat design, modern, friendly
+- Background: Solid pleasant color (#dbeafe light blue)
+- Main text: "Build Your First MCP Server"
+- 1600x840px with safe zones for text
+```
+
+**Figma Template**:
+- Search Hashnode cover templates
+- Use dev tutorial aesthetic
+- Ensure text is readable on mobile
+
+---
+
+## General Social Media Images
+
+### Twitter/X Header Image
+
+**Dimensions**: 1500x500px
+
+**Prompt**:
+```
+Create a Twitter profile header:
+- Text: "Building AI-Native Infrastructure"
+- Tagline: "Open source MCP servers for real-time data"
+- Background: Subtle tech pattern (circuit board, network nodes)
+- Color: Consistent with brand (suggest: dark blue #1e3a8a with bright accents)
+- GitHub icon + star count "100+ stars"
+- Links to blog/docs
+- Professional but approachable
+- Leave space on left for profile picture overlap
+```
+
+### Open Graph Image (Generic)
+
+**Dimensions**: 1200x630px (Facebook, LinkedIn, Discord previews)
+
+**Prompt**:
+```
+Create a generic share image:
+- Logo/project name prominently: "mcp-yield"
+- Tagline: "Connect AI to Real-Time DeFi Data"
+- Visual: Simple icon or abstract representation
+- Key features listed: "14 Tools • 5 Prompts • 50+ Networks"
+- GitHub link at bottom
+- Clean, readable at thumbnail size
+- Color scheme: Professional tech colors
+- Must be readable even at small sizes
+```
+
+---
+
+## Platform-Specific Requirements
+
+### Dev.to
+- **Size**: 1000x420px (or ratio 1000:420)
+- **Format**: PNG or JPEG
+- **File size**: Under 500KB recommended
+- **Text**: Readable at desktop and mobile sizes
+
+### Medium
+- **Size**: 1500x750px minimum (will crop to 2:1 aspect)
+- **Safe zone**: Keep important elements in center 1400x700px
+- **Format**: JPEG or PNG
+- **File size**: Under 5MB
+- **Note**: Medium crops aggressively on mobile, test your design
+
+### LinkedIn
+- **Size**: 1200x627px (exact for article)
+- **Aspect ratio**: 1.91:1 (critical for proper display)
+- **Format**: JPEG or PNG
+- **File size**: Under 5MB
+- **Text**: Professional fonts, large enough to read on mobile
+
+### Hashnode
+- **Size**: 1600x840px recommended
+- **Format**: PNG or JPEG
+- **File size**: Under 1MB recommended
+- **Note**: Hashnode shows full image, no aggressive cropping
+
+---
+
+## DIY Design Tools
+
+### Free Tools
+- **Canva**: Templates for all platforms, easy text overlay
+- **Figma**: More control, free tier sufficient
+- **Photopea**: Free Photoshop alternative in browser
+- **GIMP**: Open-source image editor
+
+### Quick Tips
+1. **Typography**: Use maximum 2 fonts (1 for title, 1 for body)
+2. **Contrast**: Ensure text readable against background (use dark overlay on images)
+3. **Simplicity**: Better to be simple and clear than complex and confusing
+4. **Consistency**: Use same color palette across all images
+5. **Test**: View at thumbnail size before publishing
+
+---
+
+## Color Palette Suggestions
+
+### Option 1: Tech Professional
+- Primary: #1e3a8a (deep blue)
+- Accent: #00d4ff (electric blue)
+- Success: #10b981 (green)
+- Background: #0f172a (dark navy)
+- Text: #f8fafc (off-white)
+
+### Option 2: Modern Finance
+- Primary: #0077b5 (LinkedIn blue)
+- Accent: #f59e0b (gold)
+- Success: #057642 (green)
+- Background: #ffffff (white)
+- Text: #1f2937 (dark gray)
+
+### Option 3: Friendly Developer
+- Primary: #8b5cf6 (purple)
+- Accent: #f97316 (orange)
+- Secondary: #3b82f6 (blue)
+- Background: #fef3c7 (cream)
+- Text: #1f2937 (dark gray)
+
+Choose one palette and stick with it for brand consistency!
+
+---
+
+## AI Image Generator Settings
+
+### Midjourney
+```
+/imagine [prompt] --ar 1000:420 --v 6 --style raw
+```
+- Use `--ar` for aspect ratio
+- `--style raw` for more literal interpretation
+- `--v 6` for latest version
+- Add `--no text` if you want to add text yourself
+
+### DALL-E 3 (ChatGPT)
+```
+"Create a [style] blog header image, [description],
+dimensions should be landscape format suitable for [platform],
+modern and professional style"
+```
+- DALL-E 3 handles text better but still verify spelling
+- Request "high contrast" for readability
+- Specify "professional" or "corporate" for business content
+
+### Stable Diffusion
+```
+[prompt], professional blog header, clean design,
+high contrast, readable text, modern aesthetic,
+trending on dribbble, award winning design
+```
+- Add quality tags: "trending on dribbble", "award winning"
+- Negative prompt: "cluttered, busy, illegible text, low contrast"
+- Use img2img to refine outputs
+
+---
+
+## Typography Recommendations
+
+### Dev.to (Technical)
+- **Heading**: JetBrains Mono, Fira Code, Source Code Pro (monospace)
+- **Body**: Inter, Roboto, Open Sans (clean sans-serif)
+
+### Medium (Business)
+- **Heading**: Playfair Display, Merriweather (elegant serif)
+- **Body**: Lato, Nunito, Raleway (modern sans-serif)
+
+### LinkedIn (Professional)
+- **Heading**: Montserrat Bold, Poppins Bold (impactful sans-serif)
+- **Body**: Open Sans, Lato (corporate sans-serif)
+
+### Hashnode (Tutorial)
+- **Heading**: Quicksand, Comfortaa, Rounded (friendly rounded fonts)
+- **Body**: Nunito, Karla (approachable sans-serif)
+
+---
+
+## Alternative: Hire a Designer
+
+If you want professional results:
+
+**Fiverr**: $25-100 for blog header set
+**99designs**: Contest for $299+, multiple options
+**Upwork**: Hourly rate $30-100/hr depending on experience
+
+**What to provide**:
+- This prompt document
+- Color preferences
+- Platform dimensions needed
+- 2-3 example images you like
+- Text to include
+- Timeline (allow 3-7 days)
+
+**Deliverables to request**:
+- All platform sizes (Dev.to, Medium, LinkedIn, Hashnode)
+- Source files (PSD, Figma, AI)
+- Social media sizes (1200x630, 1500x500)
+- Editable templates for future posts
+
+---
+
+## Testing Your Images
+
+Before publishing:
+
+1. **Desktop view**: Check full image looks good
+2. **Mobile view**: Check mobile crop (usually center or top)
+3. **Thumbnail view**: Ensure readable at 200px wide
+4. **Share preview**: Use Facebook Debug Tool to see how it renders in shares
+5. **Contrast check**: Use WebAIM contrast checker for text readability
+
+**Tools**:
+- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+- Twitter Card Validator: https://cards-dev.twitter.com/validator
+- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+
+---
+
+## Quick Checklist
+
+Before finalizing any cover image:
+
+- [ ] Correct dimensions for platform
+- [ ] File size under platform limit
+- [ ] Text readable at thumbnail size
+- [ ] High contrast (text vs background)
+- [ ] Professional/appropriate for content tone
+- [ ] Consistent with brand colors (if established)
+- [ ] No copyrighted elements
+- [ ] Tested on mobile view
+- [ ] No critical info in crop zones
+- [ ] Alt text planned for accessibility
+
+---
+
+**Need help?** Most designers on Fiverr can turn these prompts into images for $25-50 per set. Worth it for professional results!

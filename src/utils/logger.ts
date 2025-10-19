@@ -37,13 +37,9 @@ export class Logger {
       ...context
     };
 
-    if (level === 'error') {
-      console.error(JSON.stringify(payload));
-    } else if (level === 'warn') {
-      console.warn(JSON.stringify(payload));
-    } else {
-      console.log(JSON.stringify(payload));
-    }
+    // In stdio mode, ALL logging must go to stderr (not stdout)
+    // because stdout is reserved for MCP JSON-RPC protocol messages
+    console.error(JSON.stringify(payload));
   }
 
   child(context: LogContext) {
